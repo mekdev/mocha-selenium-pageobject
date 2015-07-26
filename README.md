@@ -1,8 +1,12 @@
-# Mocha-Selenium-PageObjects
+# Mocha-Selenium-PageObject
 
 Since there is no good examples of using Selenium Webdriver on NodeJs. 
-And by Selenium Webdriver I mean using [WebdriverJS][webdriverjs]the official selenium-webdriver Javascript port on [Npm][npm].
-We are also following the [PageObject][page-objects] design pattern strictly. Read more at - http://martinfowler.com/bliki/PageObject.html
+
+And by Selenium Webdriver I mean using [WebdriverJS][webdriverjs] the official selenium-webdriver Javascript port on [Npm][npm].
+
+We are also following the [PageObject][page-objects] design pattern strictly. 
+
+Read more at - http://martinfowler.com/bliki/PageObject.html
 
 This is my first design of the Framwork using the below:
 
@@ -14,6 +18,7 @@ This is my first design of the Framwork using the below:
 # Setting up
 
 ## Pre-requisites
+
 Make sure you already have [Homebrew][homebrew] and [Caskroom][caskroom] setup.
 
 ```
@@ -114,11 +119,7 @@ $FRAMEWORK_HOME [develop]$ BROWSER=safari npm test test/SauceLabsTest.js
 
 We also have our own extended versions of [Selenium Webdriver][selenium-webdriver] calls that is surfaced in a common + easy to call location.
 
-This common location is the `BasePage` which all pages should inherit.
-
-This can be added-on for more custom wait depending on your project.
-
-This pattern allows custom wait calls to be called in the context of the Page Object.
+This location is the `BasePage` which all pages should inherit. This pattern allows custom wait calls to be called in the context of any child Page Object.
 
 ```
     this.waitForPresent(By.css('div.job-header div.job-actions'));
@@ -136,6 +137,8 @@ In `BasePage` we implement the `waitForPresent()` method
         }, timeout);
     };
 ```
+
+This can be added-on for more custom wait depending on your project.
 
 
 ## Built-in Promise Manager and Mocha test wrapper
