@@ -1,11 +1,15 @@
 # Mocha-Selenium-PageObjects
 
-Since there is no good examples of using a full receipe of
+Since there is no good examples of using Selenium Webdriver on NodeJs. 
+And by Selenium Webdriver I mean using [WebdriverJS][webdriverjs]the official selenium-webdriver Javascript port on [Npm][npm].
+We are also following the [PageObject][page-objects] design pattern strictly. Read more at - http://martinfowler.com/bliki/PageObject.html
 
-- [Mocha][mocha]
-- [WebdriverJS][webdriverjs] : This is the official selenium-webdriver Javascript port in [Npm][npm]
-- [selenium-standalone][selenium-standalone]
-- [chrome-driver][chrome-driver] : This is auto managed by the Selenium Standalone server instance
+This is my first design of the Framwork using the below:
+
+- [Mocha][mocha] : The most equivalent of TestNG in the NodeJS world
+- [Selenium Webdriver][selenium-webdriver]: This is the official selenium-webdriver Javascript port in [Npm][npm] not the wire protocal varient 
+- [selenium-standalone][selenium-standalone]: This is the only download you will need, chrome driver is auto managed by the Selenium Standalone server instance
+- [Asserts][asserts] : we are using chai asserts
 
 # Setting up
 
@@ -44,6 +48,10 @@ The directions below assumes that `$FRAMEWORK_HOME` is the root directory of the
 
 Starting up the local selenium server for driving your local tests
 
+The chrome driver is no longer needed and is auto-managed and installed via the standalone server.
+
+Install this by doing
+
 ```
 $FRAMEWORK_HOME [master]$ npm run install_selenium
 ```
@@ -79,7 +87,9 @@ The following environment variables are supported by the framework
   Usage : `ENV=localhost` or `ENV=saucelabs`
 
 
-## Run tests
+## Running tests
+
+The Mocha executable is already hooked up to the npm test run target.
 
 For example running from `$FRAMEWORK_HOME` using running the test file `AirwareTest.js` under `./test`
 
@@ -99,7 +109,9 @@ Running `SauceLabsTest.js`  using browser Firefox (default chrome)
 $FRAMEWORK_HOME [develop]$ BROWSER=safari npm test test/SauceLabsTest.js
 ```
 
+## Known issues 
 
+TBD
 
 [homebrew]: http://brew.sh
 [caskroom]: http://caskroom.io/
@@ -107,5 +119,8 @@ $FRAMEWORK_HOME [develop]$ BROWSER=safari npm test test/SauceLabsTest.js
 [npm]: https://www.npmjs.com/
 [mocha]: http://mochajs.org/
 [webdriverjs]: https://code.google.com/p/selenium/wiki/WebDriverJs
+[selenium-webdriver]: https://www.npmjs.com/package/selenium-webdriver
 [selenium-standalone]: http://www.seleniumhq.org/download/
 [chrome-driver]:https://sites.google.com/a/chromium.org/chromedriver/
+[page-objects]: http://martinfowler.com/bliki/PageObject.html
+[asserts]: http://chaijs.com/api/assert/
