@@ -2,8 +2,7 @@
 
 Since there is no good examples of using Selenium Webdriver on NodeJs. 
 
-And by Selenium Webdriver I mean using [WebdriverJS][webdriverjs] the official selenium-webdriver Javascript port on [Npm][npm].
-
+And by Selenium Webdriver I mean using [WebdriverJS][webdriverjs] the official selenium-webdriver Javascript port on [Npm][npm]. 
 We are also following the [PageObject][page-objects] design pattern strictly. 
 
 Read more at - http://martinfowler.com/bliki/PageObject.html
@@ -46,7 +45,7 @@ npm install
 The directions below assumes that `$FRAMEWORK_HOME` is the root directory of the framework :
 
 ```
-~/git/mekdev/mocha-selenium-pageobjects
+~/git/mekdev/mocha-selenium-pageobject [master]$
 ```
 
 ## Start the Selenium Standalone Server
@@ -76,7 +75,6 @@ http://localhost:4444/selenium-server/driver?cmd=shutDownSeleniumServer
 
 The following environment variables are supported by the framework
 
-
 - **BROWSER** : Specifies the browser. 
   
   Supported values are `chrome | firefox | safari | ie` omiting this will default to `chrome`
@@ -90,7 +88,6 @@ The following environment variables are supported by the framework
   Supported values are `localhost | saucelabs | browserstack (coming soon)` omiting this will default to `localhost`
   
   Usage : `ENV=localhost` or `ENV=saucelabs`
-
 
 ## Running tests
 
@@ -117,8 +114,7 @@ $FRAMEWORK_HOME [develop]$ BROWSER=safari npm test test/SauceLabsTest.js
 
 ## Extended version of WebDriver methods in BasePage
 
-We also have our own extended versions of [Selenium Webdriver][selenium-webdriver] calls that is surfaced in a common + easy to call location.
-
+We also have our own extended versions of [Selenium Webdriver][selenium-webdriver] calls that is surfaced in a common + easy to call location. 
 This location is the `BasePage` which all pages should inherit. This pattern allows custom wait calls to be called in the context of any child Page Object.
 
 ```
@@ -140,7 +136,6 @@ In `BasePage` we implement the `waitForPresent()` method
 
 This can be added-on for more custom wait depending on your project.
 
-
 ## Built-in Promise Manager and Mocha test wrapper
 
 One of the main reasons that I went with [Selenium Webdriver][selenium-webdriver] is code readability and the ability to achieve sync-like syntax out of the box.
@@ -150,7 +145,6 @@ This is achievable by leveraging the built-in Promise Manager control flows and 
 ### Mocha test wrapper
 
 [Selenium Webdriver][selenium-webdriver] has a built in wrapper for mocha methods that automatically handles all the calls into the promise manager. 
-
 All callbacks can be omitted and it just works which makes the code very “synchronous” like. 
 
 Specifically, you don’t have to chain everything and each individual chain of code should do only one action and then some assertion if necessary.
@@ -173,7 +167,6 @@ See - https://code.google.com/p/selenium/wiki/WebDriverJs#Writing_Tests
         test.afterEach();
     });
 ```
-
 
 ### Promise Manager
 
@@ -215,5 +208,5 @@ TBD
 [selenium-webdriver]: https://www.npmjs.com/package/selenium-webdriver
 [selenium-standalone]: http://www.seleniumhq.org/download/
 [chrome-driver]:https://sites.google.com/a/chromium.org/chromedriver/
-[page-objects]: http://martinfowler.com/bliki/PageObject.html
+[page-objects]: https://code.google.com/p/selenium/wiki/PageObjects
 [asserts]: http://chaijs.com/api/assert/
