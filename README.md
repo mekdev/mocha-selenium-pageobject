@@ -109,7 +109,73 @@ Running `SauceLabsTest.js`  using browser Firefox (default chrome)
 $FRAMEWORK_HOME [develop]$ BROWSER=safari npm test test/SauceLabsTest.js
 ```
 
+
+## Extended Version of WebDriver methods in Page Objects
+
+We also have our own extended versions of [Selenium Webdriver][selenium-webdriver] calls that is surfaced in a common + easy to call location.
+
+## Built-in Promise Manager and Mocha test wrapper
+
+One of the main reasons that I went with [Selenium Webdriver][selenium-webdriver] is code readability and the ability to achieve sync-like syntax out of the box.
+
+This is achievable by leveraging the built-in Promise Manager control flows and Mocha Test Wrapper.
+
+### Mocha test wrapper
+
+[Selenium Webdriver][selenium-webdriver] has a built in wrapper for mocha methods that automatically handles all the calls into the promise manager. 
+
+All callbacks can be omitted and it just works which makes the code very “synchronous” like. 
+
+Specifically, you don’t have to chain everything and each individual chain of code should do only one action and then some assertion if necessary.
+
+This powerful pattern is possible due to leveraging the built-in Promise Manager.
+
+See - https://code.google.com/p/selenium/wiki/WebDriverJs#Writing_Tests 
+
+```
+    var test = require('selenium-webdriver/testing');
+    var webdriver = require('selenium-webdriver');
+    test.describe('Test', function() {
+ 
+        test.beforeEach();
+        test.it('', function() {
+            var driver = new webdriver.Builder().build();
+            driver.get("http://www.airware.com");
+            assertEquals("Airware", driver.getTitle());
+        });
+        test.afterEach();
+    });
+```
+
+
+### Promise Manager
+
+The Promise Manager can also be used explicitly. Hence, we can also use this Promise Manager to frame execution order (async calls) in our code. 
+
+See - https://code.google.com/p/selenium/wiki/WebDriverJs#Control_Flows
+
+A new instance of the Promise Manager can be obtained by calling `promise.controlFlow()` then start framing the execution. 
+
 ## Known issues 
+
+The Saucelabs example is not stable.
+
+Running into issue when Mocha swallows the internal exceptions thrown by the Promise Manager queue
+
+```
+  1) Saucelabs tests should have all landing page elements:
+     Error: the error {} was thrown, throw an Error :)
+      at Array.forEach (native)
+
+```
+
+More resources: 
+
+ - https://github.com/mochajs/mocha/issues/1677
+ - https://github.com/mochajs/mocha/issues/1801
+ - https://github.com/mochajs/mocha/issues/1338
+ - http://stackoverflow.com/questions/14966821/testing-for-errors-thrown-in-mocha
+
 
 TBD
 

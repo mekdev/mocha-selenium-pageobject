@@ -37,13 +37,6 @@ BasePage.prototype.open = function(url) {
  * - Always allow exception propagation to the test runner, try your best to avoid running into the below
  *      mocha Error: the error {} was thrown, throw an Error :)
  *
- * Known issues on Mocha swallowing exceptions
- * https://github.com/mochajs/mocha/issues/1677
- * https://github.com/mochajs/mocha/issues/1801
- *
- * Additional resources
- * https://github.com/mochajs/mocha/issues/1338
- * http://stackoverflow.com/questions/14966821/testing-for-errors-thrown-in-mocha
  */
 
 /**
