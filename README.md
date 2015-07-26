@@ -110,9 +110,33 @@ $FRAMEWORK_HOME [develop]$ BROWSER=safari npm test test/SauceLabsTest.js
 ```
 
 
-## Extended Version of WebDriver methods in Page Objects
+## Extended version of WebDriver methods in BasePage
 
 We also have our own extended versions of [Selenium Webdriver][selenium-webdriver] calls that is surfaced in a common + easy to call location.
+
+This common location is the `BasePage` which all pages should inherit.
+
+This can be added-on for more custom wait depending on your project.
+
+This pattern allows custom wait calls to be called in the context of the Page Object.
+
+```
+    this.waitForPresent(By.css('div.job-header div.job-actions'));
+
+```
+
+In `BasePage` we implement the `waitForPresent()` method
+
+```
+    BasePage.prototype.waitForPresent = function(locator, timeout) {
+        timeout = timeout || WAIT_TIMEOUT;
+        var driver = this.driver;
+        return this.driver.wait(function() {
+            // You own definition of a present element
+        }, timeout);
+    };
+```
+
 
 ## Built-in Promise Manager and Mocha test wrapper
 
