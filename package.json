@@ -10,7 +10,6 @@
     "selenium-webdriver": "2.46",
     "eyes.selenium" : "0.0.36",
     "chai": "3.0.0",
-    "jshint": "2.8.0",
     "saucelabs": "0.1.1"
   },
   "scripts": {
