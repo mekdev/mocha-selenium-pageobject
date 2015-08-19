@@ -4,6 +4,8 @@ var Promise = require('selenium-webdriver').promise;
 var Until = require('selenium-webdriver').until;
 // Default wait for UI object is 10 seconds (for now)
 var WAIT_TIMEOUT = 10000;
+// Wait time before attempting any retries
+var WAIT_TIME_BEFORE_RETRY = 500;
 // Webdriver holder for the base page allowing to call this.driver in all page objects
 var driver;
 // Internal debug
@@ -40,7 +42,9 @@ BasePage.prototype.open = function(url) {
  */
 
 /**
- * Waits for the element + check if the element is displayed which takes a timeout
+ * Waits for the element + check if the element is displayed and takes an override timeout in ms
+ *  - Waits until the element is located in the DOM, fail if not found
+ *  - Waits for the element to become visible, fail if not visible
  * Returns promise of isDisplayed() which can be resolved to a boolean value
  * @param locator
  * @param timeout
@@ -50,28 +54,86 @@ BasePage.prototype.waitForDisplayed = function(locator, timeout) {
     timeout = timeout || WAIT_TIMEOUT;
     var defer = Promise.defer();
     var driver = this.driver;
-    this.driver.wait(function() {
-        if (debug){console.log('is present ' + locator);}
-        return driver.isElementPresent(locator);
-    }, timeout)
-    .then(function() {
-        return driver.wait(function() {
-            if (debug){console.log('is displayed ' + locator);}
-            // First attempt to fix random stale element in this util method
-            // Implicit wait for located again after isPresent()
-            driver.wait(Until.elementLocated(locator));
-            return driver
-                .findElement(locator)
-                .isDisplayed();
-        }, timeout);
-    })
-    .then(function(displayed){
-        if (debug){console.log('isDisplayed : ' + locator + displayed);}
-        defer.fulfill(displayed);
+    // Explicitly wait for the element to be located
+    driver.wait(Until.elementLocated(locator),timeout).then(function () {
+        if (debug){console.log('waitForDisplayed::Element is located : ' + locator);}
+        // Get the element and explicitly wait for the element to be visible
+        var element = driver.findElement(locator);
+        driver.wait(Until.elementIsVisible(element),timeout).then(function() {
+            if (debug){console.log('waitForEnabled::Element is visible ' + locator);}
+            // After it is enabled check if it is really displayed
+            return driver.findElement(locator).isDisplayed();
+        }, function (err) /* error call back*/ {
+            /**
+             * Retry block : If element stale then retry else throw error
+             */
+            if (err.name === 'StaleElementReferenceError') {
+                if (debug){console.log('waitForDisplayed::Element not visible with error : ' + err.name + ' retrying...');}
+                driver.sleep(WAIT_TIME_BEFORE_RETRY);
+                element = driver.findElement(locator);
+                driver.wait(Until.elementIsVisible(element),timeout).then(function() {
+                    if (debug){console.log('waitForEnabled::Element is visible after retry ' + locator);}
+                    // After it is enabled check if it is really displayed
+                    return driver.findElement(locator).isDisplayed();
+                }, function (err) /* error call back*/ {
+                    console.log('waitForDisplayed::Element is still not visible after retry, error : ' + err);
+                    defer.reject(err + ' : ' + locator)
+                }).then(function(displayed){
+                    if (debug){console.log('waitForDisplayed::Element : ' + locator + ' .isDisplayed() : '+ displayed);}
+                    defer.fulfill(displayed);
+                });
+            }
+            else {
+                console.log('waitForDisplayed::Element is not visible, error : ' + err);
+                defer.reject(err + ' : ' + locator)
+            }
+        }).then(function(displayed){
+            if (debug){console.log('waitForDisplayed::Element : ' + locator + ' .isDisplayed() : '+ displayed);}
+            defer.fulfill(displayed);
+        });
+        // Can do it this way too but we are opting for for verboseness in the framework, hence the above
+        //.then(defer.fulfill);
+    }, function (err) /* error call back*/ {
+        console.log('waitForDisplayed::Element was not found, error : ' + err);
+        defer.reject(err + ' : ' + locator)
     });
-    //.then(defer.fulfill);
     return defer.promise;
 };
 
+
+/**
+ * Safe displayed status getter for element present status to check for negative states
+ * @param locator
+ * @param timeout
+ * @returns {!promise.Promise.<T>}
+ */
+BasePage.prototype.isDisplayed = function(locator, timeout) {
+    timeout = timeout || WAIT_TIME_PRESENT;
+    var defer = Promise.defer();
+    var driver = this.driver;
+    // Explicitly wait for the element to be located first
+    driver.wait(Until.elementLocated(locator),timeout).then(function() {
+        if (debug){console.log('Element is located : ' + locator);}
+        // If its located check of if it is visible
+        var element = driver.findElement(locator);
+        driver.wait(Until.elementIsVisible(element),timeout).then(function() {
+            // If it is visible then check if it is displayed
+            driver.findElement(locator).isDisplayed().then(function (isDisplayed) {
+                if (debug) {console.log('Element is displayed : ' + isDisplayed + locator);}
+                defer.fulfill(isDisplayed);
+            }, function (err) /* error call back*/ {
+                if (debug) {console.log('Element is NOT displayed : ' + locator);}
+                defer.fulfill(false);
+            });
+        }, function (err) /* error call back*/ {
+            console.log('Element is not visible, error : ' + err);
+            defer.fulfill(false);
+        });
+    }, function (err) /* error call back*/ {
+        console.log('Element is not located, error : ' + err);
+        defer.fulfill(false);
+    });
+    return defer.promise;
+};
 
 module.exports = BasePage;
