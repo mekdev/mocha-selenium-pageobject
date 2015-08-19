@@ -3,7 +3,7 @@
 var Promise = require('selenium-webdriver').promise;
 var Until = require('selenium-webdriver').until;
 // Default wait for UI object is 10 seconds (for now)
-var WAIT_TIMEOUT = 10000;
+var WAIT_TIME_PRESENT = 10000;
 // Wait time before attempting any retries
 var WAIT_TIME_BEFORE_RETRY = 500;
 // Webdriver holder for the base page allowing to call this.driver in all page objects
@@ -51,7 +51,7 @@ BasePage.prototype.open = function(url) {
  * @returns {!promise.Promise.<T>}
  */
 BasePage.prototype.waitForDisplayed = function(locator, timeout) {
-    timeout = timeout || WAIT_TIMEOUT;
+    timeout = timeout || WAIT_TIME_PRESENT;
     var defer = Promise.defer();
     var driver = this.driver;
     // Explicitly wait for the element to be located
@@ -64,6 +64,7 @@ BasePage.prototype.waitForDisplayed = function(locator, timeout) {
             // After it is enabled check if it is really displayed
             return driver.findElement(locator).isDisplayed();
         }, function (err) /* error call back*/ {
+
             /**
              * Retry block : If element stale then retry else throw error
              */
@@ -87,6 +88,7 @@ BasePage.prototype.waitForDisplayed = function(locator, timeout) {
                 console.log('waitForDisplayed::Element is not visible, error : ' + err);
                 defer.reject(err + ' : ' + locator)
             }
+            
         }).then(function(displayed){
             if (debug){console.log('waitForDisplayed::Element : ' + locator + ' .isDisplayed() : '+ displayed);}
             defer.fulfill(displayed);
@@ -99,7 +101,6 @@ BasePage.prototype.waitForDisplayed = function(locator, timeout) {
     });
     return defer.promise;
 };
-
 
 /**
  * Safe displayed status getter for element present status to check for negative states
@@ -132,6 +133,93 @@ BasePage.prototype.isDisplayed = function(locator, timeout) {
     }, function (err) /* error call back*/ {
         console.log('Element is not located, error : ' + err);
         defer.fulfill(false);
+    });
+    return defer.promise;
+};
+
+BasePage.prototype.waitForEnabled = function(locator, timeout) {
+    timeout = timeout || WAIT_TIME_PRESENT;
+    var defer = Promise.defer();
+    var driver = this.driver;
+    driver.sleep(300); // Special case for enabled, wait a bit for stability
+    // Explicitly wait for the element to be located
+    driver.wait(Until.elementLocated(locator),timeout).then(function () {
+        if (debug){console.log('waitForEnabled::Element is located : ' + locator);}
+        // Get the element and explicitly wait for the element to be visible
+        var element = driver.findElement(locator);
+        driver.wait(Until.elementIsVisible(element),timeout).then(function() {
+            if (debug){console.log('waitForEnabled::Element is visible : ' + locator);}
+            // Get the element again and explicitly wait for it to be enabled
+            element = driver.findElement(locator);
+            driver.wait(Until.elementIsEnabled(element),timeout).then(function() {
+                if (debug){console.log('waitForEnabled::Element is enabled ' + locator);}
+                // After it is enabled check if it is really enabled
+                return driver.findElement(locator).isEnabled();
+            }, function (err) /* error call back*/ {
+                console.log('waitForEnabled::Element is not enabled, error : ' + err);
+                defer.reject(err + ' : ' + locator);
+            }).then(function(enabled){
+                if (debug){console.log('waitForEnabled::Element : ' + locator + ' isEnabled() : '+ enabled);}
+                defer.fulfill(enabled);
+            });
+        },function (err) /* error call back*/ {
+
+            /**
+             * Retry block for elementIsVisible : If element stale then retry else throw error
+             * TODO - turn this into a recursive retry or refactor out once we need to retry more than once
+             */
+            if (err.name === 'StaleElementReferenceError') {
+                if (debug){console.log('waitForEnabled::Stale element on wait elementIsVisible retrying...');}
+                driver.sleep(WAIT_TIME_BEFORE_RETRY);
+                element = driver.findElement(locator);
+                driver.wait(Until.elementIsVisible(element),timeout).then(function() {
+                    if (debug){console.log('waitForEnabled::Element is visible after retry : ' + locator);}
+                    // Get the element again and explicitly wait for it to be enabled
+                    element = driver.findElement(locator);
+                    driver.wait(Until.elementIsEnabled(element),timeout).then(function() {
+                        if (debug){console.log('waitForEnabled::Element is enabled ' + locator);}
+                        // After it is enabled check if it is really enabled
+                        return driver.findElement(locator).isEnabled();
+                    }, function (err) /* error call back*/ {
+
+                        /**
+                         * Retry block for elementIsEnabled : If element stale then retry else throw error
+                         */
+
+                        if (err.name === 'StaleElementReferenceError') {
+                            if (debug){console.log('waitForEnabled::Stale element on wait elementIsEnabled retrying...');}
+                            driver.sleep(WAIT_TIME_BEFORE_RETRY);
+                            element = driver.findElement(locator);
+                            driver.wait(Until.elementIsEnabled(element),timeout).then(function() {
+                                if (debug){console.log('waitForEnabled::Element is enabled after retry ' + locator);}
+                                // After it is enabled check if it is really enabled
+                                return driver.findElement(locator).isEnabled();
+                            }).then(function(enabled){
+                                if (debug){console.log('waitForEnabled::Element : ' + locator + ' isEnabled() : '+ enabled);}
+                                defer.fulfill(enabled);
+                            });
+                        } else {
+                            console.log('waitForEnabled::Element is not enabled, error : ' + err);
+                            defer.reject(err + ' : ' + locator);
+                        }
+
+                    }).then(function(enabled){
+                        if (debug){console.log('waitForEnabled::Element : ' + locator + ' isEnabled() : '+ enabled);}
+                        defer.fulfill(enabled);
+                    });
+                },function (err) /* error call back*/ {
+                    console.log('waitForEnabled::Element is still not visible after retry, error : ' + err);
+                    defer.reject(err + ' : ' + locator);
+                });
+            } else {
+                console.log('waitForEnabled::Element is not visible, error : ' + err);
+                defer.reject(err + ' : ' + locator);
+            }
+
+        });
+    }, function (err) /* error call back*/ {
+        console.log('waitForEnabled::Element was not found, error : ' + err);
+        defer.reject(err + ' : ' + locator);
     });
     return defer.promise;
 };
