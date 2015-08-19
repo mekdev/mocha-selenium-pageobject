@@ -88,7 +88,7 @@ BasePage.prototype.waitForDisplayed = function(locator, timeout) {
                 console.log('waitForDisplayed::Element is not visible, error : ' + err);
                 defer.reject(err + ' : ' + locator)
             }
-            
+
         }).then(function(displayed){
             if (debug){console.log('waitForDisplayed::Element : ' + locator + ' .isDisplayed() : '+ displayed);}
             defer.fulfill(displayed);
